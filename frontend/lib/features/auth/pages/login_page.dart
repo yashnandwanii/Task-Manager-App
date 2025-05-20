@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/features/auth/cubit/auth_cubit.dart';
 import 'package:frontend/features/auth/pages/signup_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -20,109 +22,139 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-
     super.dispose();
   }
 
-  void signUpUser() {
+  void loginUser() {
     if (_formKey.currentState!.validate()) {
-      // Perform sign-up logic here
-      print("User signed up with email: ${emailController.text}");
+      print('login user');
+      context.read<AuthCubit>().login(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Sign In.",
-                style: TextStyle(
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: BlocConsumer<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is AuthLoggedIn) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Login successful, redirecting to home page..."),
               ),
-              const SizedBox(
-                height: 30,
+            );
+          }
+          if (state is AuthError) {
+            print('login error: ${state.error}');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error),
               ),
-              TextFormField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                ),
-                validator: (val) {
-                  if (val == null ||
-                      val.trim().isEmpty ||
-                      val.trim().contains("@") == false ||
-                      val.trim().contains(".") == false) {
-                    return "Email field is invalid";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              TextFormField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty || val.length <= 6) {
-                    return "Password field is invalid";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              ElevatedButton(
-                onPressed: signUpUser,
-                child: Text(
-                  "SIGN IN",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushReplacement(SignupPage.route());
-                },
-                child: RichText(
-                  text: TextSpan(
-                    text: "Don't have an account? ",
+            );
+          }
+        },
+        builder: (context, state) {
+          if (state is AuthLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Sign In.",
                     style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
+                      fontSize: 50,
+                      fontWeight: FontWeight.bold,
                     ),
-                    children: [
-                      TextSpan(
-                        text: "Sign Up",
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                    ),
+                    validator: (val) {
+                      if (val == null ||
+                          val.trim().isEmpty ||
+                          val.trim().contains("@") == false ||
+                          val.trim().contains(".") == false) {
+                        return "Email field is invalid";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                    ),
+                    validator: (val) {
+                      if (val == null ||
+                          val.trim().isEmpty ||
+                          val.length <= 6) {
+                        return "Password field is invalid";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                    onPressed: loginUser,
+                    child: Text(
+                      "SIGN IN",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(SignupPage.route());
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        text: "Don't have an account? ",
                         style: TextStyle(
                           color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
+                        children: [
+                          TextSpan(
+                            text: "Sign Up",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

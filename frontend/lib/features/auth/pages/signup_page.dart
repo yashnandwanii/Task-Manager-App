@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:frontend/features/auth/cubit/auth_cubit.dart';
 import 'package:frontend/features/auth/pages/login_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -27,118 +29,149 @@ class _SignupPageState extends State<SignupPage> {
 
   void signUpUser() {
     if (_formKey.currentState!.validate()) {
-      // Perform sign-up logic here
-      print("User signed up with email: ${emailController.text}");
+      context.read<AuthCubit>().signup(
+            name: nameController.text.trim(),
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Sign Up.",
-                style: TextStyle(
-                  fontSize: 50,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: BlocConsumer<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is AuthSignUp) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Account created successfully, login to continue"),
               ),
-              const SizedBox(
-                height: 30,
+            );
+            
+          }
+          if (state is AuthError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.error),
               ),
-              TextFormField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Name',
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty || val.length < 3) {
-                    return "Name field cannot be empty";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              TextFormField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                ),
-                validator: (val) {
-                  if (val == null ||
-                      val.trim().isEmpty ||
-                      val.trim().contains("@") == false ||
-                      val.trim().contains(".") == false) {
-                    return "Email field is invalid";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 15,
-              ),
-              TextFormField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty || val.length <= 6) {
-                    return "Password field is invalid";
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              ElevatedButton(
-                onPressed: signUpUser,
-                child: Text(
-                  "SIGN UP",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushReplacement(LoginPage.route());
-                },
-                child: RichText(
-                  text: TextSpan(
-                    text: "Already have an account? ",
+            );
+          }
+        },
+        builder: (context, state) {
+          if(state is AuthLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Sign Up.",
                     style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
+                      fontSize: 50,
+                      fontWeight: FontWeight.bold,
                     ),
-                    children: [
-                      TextSpan(
-                        text: "Sign In",
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Name',
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty || val.length < 3) {
+                        return "Name field cannot be empty";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      hintText: 'Email',
+                    ),
+                    validator: (val) {
+                      if (val == null ||
+                          val.trim().isEmpty ||
+                          val.trim().contains("@") == false ||
+                          val.trim().contains(".") == false) {
+                        return "Email field is invalid";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: InputDecoration(
+                      hintText: 'Password',
+                    ),
+                    validator: (val) {
+                      if (val == null ||
+                          val.trim().isEmpty ||
+                          val.length <= 6) {
+                        return "Password field is invalid";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  ElevatedButton(
+                    onPressed: signUpUser,
+                    child: Text(
+                      "SIGN UP",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushReplacement(LoginPage.route());
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        text: "Already have an account? ",
                         style: TextStyle(
                           color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
+                        children: [
+                          TextSpan(
+                            text: "Sign In",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
