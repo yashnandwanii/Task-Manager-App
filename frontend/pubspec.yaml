@@ -12,6 +12,10 @@ dependencies:
   http: ^1.4.0
   flutter_bloc: ^9.1.1
   shared_preferences: ^2.5.3
+  sqflite: ^2.4.2
+  path: ^1.9.1
+  intl: ^0.20.2
+  flex_color_picker: ^3.7.1
 
 dev_dependencies:
   flutter_test:
@@ -19,3 +23,12 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: Cera Pro
+      fonts:
+        - asset: assets/fonts/Cera-Pro-Medium.otf
+        - asset: assets/fonts/Cera-Pro-Bold.otf
+          weight: 700
+        
+         

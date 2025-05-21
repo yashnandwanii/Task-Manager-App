@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/features/auth/cubit/auth_cubit.dart';
 import 'package:frontend/features/auth/pages/signup_page.dart';
+import 'package:frontend/features/home/pages/homepage.dart';
 
 class LoginPage extends StatefulWidget {
   static MaterialPageRoute route() => MaterialPageRoute(
@@ -27,7 +28,6 @@ class _LoginPageState extends State<LoginPage> {
 
   void loginUser() {
     if (_formKey.currentState!.validate()) {
-      print('login user');
       context.read<AuthCubit>().login(
             email: emailController.text.trim(),
             password: passwordController.text.trim(),
@@ -41,14 +41,10 @@ class _LoginPageState extends State<LoginPage> {
       body: BlocConsumer<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthLoggedIn) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Login successful, redirecting to home page..."),
-              ),
-            );
+            Navigator.pushAndRemoveUntil(
+                context, Homepage.route(), (_) => false);
           }
           if (state is AuthError) {
-            print('login error: ${state.error}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.error),

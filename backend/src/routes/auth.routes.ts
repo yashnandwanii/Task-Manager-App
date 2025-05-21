@@ -23,9 +23,6 @@ authRouter.post("/signup", async(req: Request<{}, {}, SignUpBody> , res: Respons
     try {
         // get request body
         const {name, email, password} = req.body;
-        
-        
-
         // check if the user already exists
         const existingUser = await db
         .select()
@@ -40,9 +37,6 @@ authRouter.post("/signup", async(req: Request<{}, {}, SignUpBody> , res: Respons
         }
         //hashed password
         const hashedPassword = await bcryptjs.hash(password, 8);
-        
-        
-
         // create a new user and store it in the database
         const newUser:NewUser = {
             name,
@@ -51,10 +45,6 @@ authRouter.post("/signup", async(req: Request<{}, {}, SignUpBody> , res: Respons
             createdAt: new Date(),
             updatedAt: new Date()
         }
-
-        console.log(newUser);
-        
-
         const [user] =  await db.insert(users).values(newUser).returning();
         res.status(201).json(user);
         
@@ -70,16 +60,12 @@ authRouter.post("/login", async(req: Request<{}, {}, LoginBody> , res: Response)
     try {
         // get request body
         const {email, password} = req.body;
-        
         // check if the user already exists
         const existingUser = await db
         .select()
         .from(users)
         .where(eq(users.email, email))
-
-        console.log(existingUser);
-        
-        
+    
         if(!existingUser) {
             res.status(400).json({
                 error: "User with this email does not exist"
@@ -94,18 +80,11 @@ authRouter.post("/login", async(req: Request<{}, {}, LoginBody> , res: Response)
             });
             return;
         }
-        console.log("isMatched",isMatched);
-        
-
         const token = jwt.sign({
             id:existingUser[0].id,
         },"passwordKey");
 
-        console.log(token);
-        
-
         res.status(200).json({token, ...existingUser});
-        console.log("routes completed.");
         
     } catch (error) {
         res.status(500).json({
