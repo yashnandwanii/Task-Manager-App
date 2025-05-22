@@ -1,10 +1,15 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/utils.dart';
 import 'package:intl/intl.dart';
 
 class DateSelector extends StatefulWidget {
-  const DateSelector({super.key});
+  final DateTime selectedDate;
+  final Function(DateTime) onTap;
+  const DateSelector({
+    super.key,
+    required this.selectedDate,
+    required this.onTap,
+  });
 
   @override
   State<DateSelector> createState() => _DateSelectorState();
@@ -12,17 +17,15 @@ class DateSelector extends StatefulWidget {
 
 class _DateSelectorState extends State<DateSelector> {
   int weekOffset = 0;
-  DateTime selectedDate = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
     final weekDates = generateWeekDates(weekOffset);
+    String monthName = DateFormat("MMMM").format(weekDates.first);
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).copyWith(
+          padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
             bottom: 10,
           ),
           child: Row(
@@ -30,34 +33,32 @@ class _DateSelectorState extends State<DateSelector> {
             children: [
               IconButton(
                 onPressed: () {
-                  // Handle previous week
                   setState(() {
                     weekOffset--;
                   });
                 },
-                icon: const Icon(CupertinoIcons.chevron_left),
+                icon: const Icon(Icons.arrow_back_ios),
               ),
-              const Text(
-                'november 2023',
-                style: TextStyle(
-                  fontSize: 18,
+              Text(
+                monthName,
+                style: const TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               IconButton(
                 onPressed: () {
-                  // Handle next week
                   setState(() {
                     weekOffset++;
                   });
                 },
-                icon: const Icon(CupertinoIcons.chevron_right),
+                icon: const Icon(Icons.arrow_forward_ios),
               ),
             ],
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: SizedBox(
             height: 80,
             child: ListView.builder(
@@ -65,26 +66,24 @@ class _DateSelectorState extends State<DateSelector> {
               itemCount: weekDates.length,
               itemBuilder: (context, index) {
                 final date = weekDates[index];
-                bool isSelected = DateFormat('d').format(date) ==
-                        DateFormat('d').format(selectedDate) &&
-                    selectedDate.month == date.month &&
-                    selectedDate.year == date.year;
+                bool isSelected = DateFormat('d').format(widget.selectedDate) ==
+                        DateFormat('d').format(date) &&
+                    widget.selectedDate.month == date.month &&
+                    widget.selectedDate.year == date.year;
                 return GestureDetector(
-                  onTap: () => setState(() {
-                    selectedDate = date;
-                  }),
+                  onTap: () => widget.onTap(date),
                   child: Container(
                     width: 70,
-                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
-                      color:
-                          isSelected ? Colors.deepOrangeAccent : Colors.white,
+                      color: isSelected ? Colors.deepOrangeAccent : null,
+                      borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected
                             ? Colors.deepOrangeAccent
                             : Colors.grey.shade300,
+                        width: 2,
                       ),
-                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -92,17 +91,18 @@ class _DateSelectorState extends State<DateSelector> {
                         Text(
                           DateFormat("d").format(date),
                           style: TextStyle(
-                            fontSize: 18,
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : Colors.black,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          DateFormat("EEE").format(date),
+                          DateFormat("E").format(date),
                           style: TextStyle(
-                            fontSize: 14,
-                            color: isSelected ? Colors.white : Colors.black,
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],

@@ -1,15 +1,33 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/constants/utils.dart';
+import 'package:frontend/features/auth/cubit/auth_cubit.dart';
+import 'package:frontend/features/home/cubit/tasks_cubit.dart';
 import 'package:frontend/features/home/pages/add_new_task_page.dart';
 import 'package:frontend/features/home/widgets/date_selector.dart';
 import 'package:frontend/features/home/widgets/tasks_card.dart';
+import 'package:intl/intl.dart';
 
-class Homepage extends StatelessWidget {
+class Homepage extends StatefulWidget {
   static MaterialPageRoute route() => MaterialPageRoute(
         builder: (context) => const Homepage(),
       );
   const Homepage({super.key});
+
+  @override
+  State<Homepage> createState() => _HomepageState();
+}
+
+class _HomepageState extends State<Homepage> {
+  DateTime selectedDate = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    final user = context.read<AuthCubit>().state as AuthLoggedIn;
+    context.read<TasksCubit>().getAllTasks(token: user.user.token);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,41 +47,93 @@ class Homepage extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          DateSelector(),
-          Row(
-            children: [
-              Expanded(
-                child: TasksCard(
-                  color: Color.fromRGBO(246, 222, 194, 1),
-                  headerText: 'Today',
-                  descriptionText:
-                      'You have 3 tasks to complete  today onadvonavavlnavuabnvavnaivunadjete  today onadvonavavlnavuabnvavnaivunadjkvnadvajnvjkadnvjadnviabvdakvd avjaivbviavbd',
-                ),
+      body: BlocBuilder<TasksCubit, TasksState>(
+        builder: (context, state) {
+          if (state is TasksLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (state is TasksError) {
+            return Center(
+              child: Text(
+                state.error,
               ),
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: strengthenColor(
-                      const Color.fromRGBO(246, 222, 194, 1), 0.69),
-                  borderRadius: BorderRadius.circular(5),
+            );
+          }
+          if (state is GetTasksSuccess) {
+            final tasks = state.tasks
+                .where(
+                  (elem) =>
+                      DateFormat('d').format(elem.dueAt) ==
+                          DateFormat('d').format(selectedDate) &&
+                      selectedDate.month == elem.dueAt.month &&
+                      selectedDate.year == elem.dueAt.year,
+                )
+                .toList();
+
+            return Column(
+              children: [
+                DateSelector(
+                  selectedDate: selectedDate,
+                  onTap: (date) {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                  },
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Text(
-                  '10:00 AM',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      TimeOfDay time = task.dueTime;
+
+                      // Inside a widget with context:
+                      String formatted12Hour = time.format(context);
+
+                      //String dueTime = task.format(context);
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: TasksCard(
+                              color: task.color,
+                              headerText: task.title,
+                              descriptionText: task.description.isEmpty
+                                  ? 'No description'
+                                  : task.description,
+                            ),
+                          ),
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: strengthenColor(
+                                task.color,
+                                0.69,
+                              ),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              formatted12Hour,
+                              style: const TextStyle(
+                                fontSize: 17,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            );
+          }
+          return SizedBox();
+        },
       ),
     );
   }
