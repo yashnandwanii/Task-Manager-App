@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +27,15 @@ class _HomepageState extends State<Homepage> {
   void initState() {
     super.initState();
     final user = context.read<AuthCubit>().state as AuthLoggedIn;
+
     context.read<TasksCubit>().getAllTasks(token: user.user.token);
+    Connectivity().onConnectivityChanged.listen((data) async {
+      if (data.contains(ConnectivityResult.mobile) ||
+          data.contains(ConnectivityResult.wifi)) {
+        // We have a connection
+        await context.read<TasksCubit>().syncTasks(token: user.user.token);
+      }
+    });
   }
 
   @override

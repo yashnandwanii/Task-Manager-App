@@ -99,6 +99,7 @@ class AuthRemoteRepository {
       return UserModel.fromJson(res.body);
     } catch (e) {
       final user = await authLocalRepository.getUser();
+      //(user);
       return user;
     }
   }

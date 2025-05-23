@@ -2,15 +2,20 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/constants.dart';
+import 'package:frontend/core/constants/utils.dart';
+import 'package:frontend/features/home/repository/task_local_repository.dart';
 import 'package:frontend/models/task.models.dart';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 
 class TaksRemoteRepository {
+  final TaskLocalRepository taskLocalRepository = TaskLocalRepository();
   Future<TaskModel> createTask({
     required String title,
     required String description,
     required DateTime dueAt,
     required String token,
+    required String uid,
     required String hexColor,
     required TimeOfDay dueTime,
   }) async {
@@ -38,15 +43,30 @@ class TaksRemoteRepository {
         }),
       );
 
-     
-
       if (res.statusCode != 201) {
         throw Exception("Failed to create task");
       }
 
       return TaskModel.fromJson(res.body);
     } catch (e) {
-      rethrow;
+      try {
+        final taskModel = TaskModel(
+          id: const Uuid().v6(),
+          uid: uid,
+          title: title,
+          description: description,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          dueAt: dueAt,
+          color: hexToRgb(hexColor),
+          isSynced: 0,
+          dueTime: dueTime,
+        );
+        await taskLocalRepository.insertTask(taskModel);
+        return taskModel;
+      } catch (e) {
+        rethrow;
+      }
     }
   }
 
@@ -61,21 +81,60 @@ class TaksRemoteRepository {
           'x-auth-token': token,
         },
       );
-      //print(res.body);
 
       if (res.statusCode != 200) {
-        throw Exception("Failed to get the tasks");
+        throw jsonDecode(res.body)['error'];
       }
+
       final listOfTasks = jsonDecode(res.body);
-      final List<TaskModel> tasks = [];
+      List<TaskModel> tasks = [];
 
       for (var elem in listOfTasks) {
         tasks.add(TaskModel.fromMap(elem));
       }
+      //print(tasks);
 
+      await taskLocalRepository.insertTasks(tasks);
+    
       return tasks;
     } catch (e) {
+      final tasks = await taskLocalRepository.getTasks();
+      if (tasks.isNotEmpty) {
+        return tasks;
+      }
+      //print(tasks);
       rethrow;
     }
   }
+
+  Future<bool> syncTasks({
+    required String token,
+    required List<TaskModel> tasks,
+  }) async {
+    try {
+      final taskListInMap = [];
+      for (final task in tasks) {
+        taskListInMap.add(task.toMap());
+      }
+      final res = await http.post(
+        Uri.parse("${Constants.backendUri}/tasks/sync"),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-auth-token': token,
+        },
+        body: jsonEncode(taskListInMap),
+      );
+
+      if (res.statusCode != 201) {
+        throw jsonDecode(res.body)['error'];
+      }
+
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+
 }

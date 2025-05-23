@@ -80,7 +80,7 @@ class UserModel {
         other.name == name &&
         other.token == token &&
         other.createdAt == createdAt &&
-        other.updatedAt == updatedAt;
+      other.updatedAt == updatedAt;
   }
 
   @override

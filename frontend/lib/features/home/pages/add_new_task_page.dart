@@ -35,7 +35,8 @@ class _AddNewTaskPageState extends State<AddNewTaskPage> {
             color: selectedColor,
             token: user.user.token,
             dueAt: selectedDate,
-            dueTime: selectedTime,
+            dueTime: selectedTime, 
+            uid: user.user.id,
           );
     }
   }
@@ -69,14 +70,13 @@ class _AddNewTaskPageState extends State<AddNewTaskPage> {
               );
               //print(_selectedTime);
               // pick the due time
-              
+
               if (_selectedDate != null && _selectedTime != null) {
                 setState(() {
                   selectedDate = _selectedDate;
                   selectedTime = _selectedTime;
                 });
               }
-              
             },
             child: Padding(
               padding: const EdgeInsets.all(8.0),

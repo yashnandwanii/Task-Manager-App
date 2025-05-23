@@ -4,7 +4,7 @@ class TasksCard extends StatelessWidget {
   final Color color;
   final String headerText;
   final String descriptionText;
-  TasksCard(
+  const TasksCard(
       {super.key,
       required this.color,
       required this.headerText,

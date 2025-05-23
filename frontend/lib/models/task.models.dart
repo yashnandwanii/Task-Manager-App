@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:frontend/core/constants/utils.dart';
 
@@ -13,6 +11,7 @@ class TaskModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime dueAt;
+  final int isSynced;
   final TimeOfDay dueTime;
 
   //final int isSynced;
@@ -25,8 +24,8 @@ class TaskModel {
     required this.updatedAt,
     required this.dueAt,
     required this.color,
+    required this.isSynced,
     required this.dueTime,
-    //required this.isSynced,
   });
 
   TaskModel copyWith({
@@ -42,16 +41,16 @@ class TaskModel {
     TimeOfDay? dueTime,
   }) {
     return TaskModel(
+      dueTime: dueTime ?? this.dueTime,
       id: id ?? this.id,
       uid: uid ?? this.uid,
-      dueTime: dueTime ?? this.dueTime,
       title: title ?? this.title,
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       dueAt: dueAt ?? this.dueAt,
       color: color ?? this.color,
-      //isSynced: isSynced ?? this.isSynced,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 
@@ -65,6 +64,7 @@ class TaskModel {
       'updatedAt': updatedAt.toIso8601String(),
       'dueAt': dueAt.toIso8601String(),
       'hexColor': rgbToHex(color),
+      'isSynced': isSynced, //
       'dueTime': DateTime(
         dueAt.year,
         dueAt.month,
@@ -72,12 +72,11 @@ class TaskModel {
         dueTime.hour,
         dueTime.minute,
       ).toIso8601String(),
-      //'isSynced': isSynced,
     };
   }
 
   factory TaskModel.fromMap(Map<String, dynamic> map) {
-    final dueTimeParsed = DateTime.parse(map['dueTime']);
+    final dueTimeParsed = DateTime.parse(map['dueTime'] as String);
     return TaskModel(
       id: map['id'] ?? '',
       uid: map['uid'] ?? '',
@@ -87,6 +86,7 @@ class TaskModel {
       updatedAt: DateTime.parse(map['updatedAt']),
       dueAt: DateTime.parse(map['dueAt']),
       color: hexToRgb(map['hexColor']),
+      isSynced: map['isSynced'] ?? 1,
       dueTime: TimeOfDay.fromDateTime(dueTimeParsed),
     );
   }
@@ -113,9 +113,8 @@ class TaskModel {
         other.updatedAt == updatedAt &&
         other.dueAt == dueAt &&
         other.color == color &&
-        other.dueTime == dueTime;
-
-    //other.isSynced == isSynced;
+        other.dueTime == dueTime &&
+        other.isSynced == isSynced;
   }
 
   @override
@@ -128,8 +127,7 @@ class TaskModel {
         updatedAt.hashCode ^
         dueAt.hashCode ^
         color.hashCode ^
+        isSynced.hashCode ^
         dueTime.hashCode;
-
-    //isSynced.hashCode;
   }
 }
