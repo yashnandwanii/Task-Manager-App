@@ -50,7 +50,7 @@ taskRouter.post("/sync", auth, async(req: AuthRequest, res)=>{
         // const {taskId, ...rest} = req.body;
         // await db.update(tasks).set(rest).where(eq(tasks.id, taskId));   
         const taskList = req.body;
-        console.log("taskList", taskList);
+        // console.log("taskList", taskList);
 
         const filteredTasks: NewTask[] = [];
 
@@ -62,7 +62,7 @@ taskRouter.post("/sync", auth, async(req: AuthRequest, res)=>{
               uid:req.user};
           filteredTasks.push(t);  
         }
-        console.log("filteredTasks", filteredTasks);
+        // console.log("filteredTasks", filteredTasks);
         
         const pushedTasks = await db.insert(tasks).values(filteredTasks).returning(); 
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frontend/core/constants/utils.dart';
-import 'package:frontend/features/home/repository/taks_remote_repository.dart';
+import 'package:frontend/features/home/repository/task_remote_repository.dart';
 import 'package:frontend/features/home/repository/task_local_repository.dart';
 import 'package:frontend/models/task.models.dart';
 
@@ -9,7 +9,7 @@ part 'tasks_state.dart';
 
 class TasksCubit extends Cubit<TasksState> {
   TasksCubit() : super(TasksInitial());
-  final TaksRemoteRepository taksRemoteRepository = TaksRemoteRepository();
+  final TaksRemoteRepository taskRemoteRepository = TaksRemoteRepository();
   final TaskLocalRepository taskLocalRepository = TaskLocalRepository();
 
   Future<void> createNewTask({
@@ -24,7 +24,7 @@ class TasksCubit extends Cubit<TasksState> {
     try {
       emit(TasksLoading());
       // Simulate a network call
-      final taskModel = await taksRemoteRepository.createTask(
+      final taskModel = await taskRemoteRepository.createTask(
         title: title,
         uid: uid,
         description: description,
@@ -48,12 +48,12 @@ class TasksCubit extends Cubit<TasksState> {
     try {
       emit(TasksLoading());
       // Simulate a network call
-      print(token);
-      final tasks = await taksRemoteRepository.getTasks(token: token);
-      //print(tasks);
+      //print("Line 51 from tasks_cubit.dart: ");
+      final tasks = await taskRemoteRepository.getTasks(token: token);
+      //print('line 53: ${tasks}');
       emit(GetTasksSuccess(tasks));
     } catch (e) {
-      print(e.toString());
+      //print("Line 56 from tasks_cubit.dart: " + e.toString());
       emit(TasksError(e.toString()));
     }
   }
@@ -63,14 +63,16 @@ class TasksCubit extends Cubit<TasksState> {
   }) async {
     try {
       // Simulate a network call
+      //print("Line 66 from task_cubit.dart : ");
       final unsyncedTasks = await taskLocalRepository.getUnsyncedTasks();
-      print(unsyncedTasks);
+      //print("Line 67 from task_cubit.dart : ");
+      //print(unsyncedTasks);
 
       if (unsyncedTasks.isEmpty) {
         return;
       }
 
-      final isSynced = await taksRemoteRepository.syncTasks(
+      final isSynced = await taskRemoteRepository.syncTasks(
           token: token, tasks: unsyncedTasks);
 
       if (isSynced) {
@@ -79,7 +81,8 @@ class TasksCubit extends Cubit<TasksState> {
         }
       }
     } catch (e) {
-      print(e.toString());
+      rethrow;
+      //print("Line 83 from task_cubit.dart : " + e.toString());
     }
   }
 }

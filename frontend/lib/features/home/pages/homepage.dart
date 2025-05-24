@@ -28,12 +28,16 @@ class _HomepageState extends State<Homepage> {
     super.initState();
     final user = context.read<AuthCubit>().state as AuthLoggedIn;
 
+    // Load tasks at start
     context.read<TasksCubit>().getAllTasks(token: user.user.token);
+
+    // Listen for network changes
     Connectivity().onConnectivityChanged.listen((data) async {
       if (data.contains(ConnectivityResult.mobile) ||
           data.contains(ConnectivityResult.wifi)) {
-        // We have a connection
-        await context.read<TasksCubit>().syncTasks(token: user.user.token);
+        final tasksCubit = context.read<TasksCubit>();
+        await tasksCubit.syncTasks(token: user.user.token);
+        await tasksCubit.getAllTasks(token: user.user.token);
       }
     });
   }

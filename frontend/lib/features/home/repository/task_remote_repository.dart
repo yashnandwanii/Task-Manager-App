@@ -81,6 +81,7 @@ class TaksRemoteRepository {
           'x-auth-token': token,
         },
       );
+      //print(res.body);
 
       if (res.statusCode != 200) {
         throw jsonDecode(res.body)['error'];
@@ -92,12 +93,14 @@ class TaksRemoteRepository {
       for (var elem in listOfTasks) {
         tasks.add(TaskModel.fromMap(elem));
       }
+      //print("Line 95 from task_remote_repository.dart");
       //print(tasks);
 
       await taskLocalRepository.insertTasks(tasks);
     
       return tasks;
     } catch (e) {
+      //print("📴 Offline or failed API. Reason: $e");
       final tasks = await taskLocalRepository.getTasks();
       if (tasks.isNotEmpty) {
         return tasks;
@@ -131,10 +134,8 @@ class TaksRemoteRepository {
 
       return true;
     } catch (e) {
-      print(e);
+      //print("syncTasks method : "+e.toString());
       return false;
     }
   }
-
-
 }

@@ -17,7 +17,7 @@ class TaskLocalRepository {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, "tasks.db");
 
-    await deleteDatabase(path);
+    //await deleteDatabase(path);
 
     return openDatabase(
       path,
@@ -70,7 +70,7 @@ class TaskLocalRepository {
   Future<List<TaskModel>> getTasks() async {
     final db = await database;
     final List<Map<String, dynamic>> result = await db.query(tableName);
-    //print(result);
+    //print('line 73 from local_repo: ${result}');
     if (result.isNotEmpty) {
       List<TaskModel> tasks = [];
       for (var elem in result) {
@@ -81,11 +81,14 @@ class TaskLocalRepository {
 
     return [];
   }
-
+// ye issue de rha h
   Future<List<TaskModel>> getUnsyncedTasks() async {
     final db = await database;
-    final result =
-        await db.query(tableName, where: 'isSynced = ?', whereArgs: [0]);
+    final result = await db.query(
+      tableName,
+      where: 'isSynced = ?',
+      whereArgs: [0],
+    );
     //print(result);
     if (result.isNotEmpty) {
       List<TaskModel> tasks = [];
@@ -94,7 +97,7 @@ class TaskLocalRepository {
       }
       return tasks;
     }
-    print('No unsynced tasks found');
+    //print('No unsynced tasks found');
 
     return [];
   }
